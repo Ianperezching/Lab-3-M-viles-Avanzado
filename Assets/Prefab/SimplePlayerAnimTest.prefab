@@ -519,6 +519,7 @@ Transform:
   - {fileID: 5630919636623731974}
   - {fileID: 3199656720191929538}
   - {fileID: 8809752651391022007}
+  - {fileID: 8825500182962768286}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &5637270750721878204
@@ -631,6 +632,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  PlayerID:
+    m_InternalValue: 0
+  projectilePrefab: {fileID: 8157285028374081382, guid: d27961ef8a73419408924f66f3fd43c7, type: 3}
+  firePoint: {fileID: 8825500182962768286}
   Speed: 10
   GroundLayer:
     serializedVersion: 2
@@ -1425,6 +1430,37 @@ Transform:
   m_Children:
   - {fileID: 4815588201140446225}
   m_Father: {fileID: 7302943822855563822}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4620389745369447950
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8825500182962768286}
+  m_Layer: 8
+  m_Name: PointFire
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8825500182962768286
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4620389745369447950}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.304, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 806016634762673109}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4638933053857531422
 GameObject:

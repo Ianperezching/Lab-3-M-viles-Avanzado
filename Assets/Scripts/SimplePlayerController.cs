@@ -1,9 +1,13 @@
-using UnityEngine;
 using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class SimplePlayerController : NetworkBehaviour
 {
     public NetworkVariable<ulong> PlayerID;
+
+    public GameObject projectilePrefab;
+    public Transform firePoint;
 
     private Animator animator;
     public float Speed;
@@ -18,7 +22,6 @@ public class SimplePlayerController : NetworkBehaviour
 
     void Update()
     {
-
         if (!IsOwner) return;
 
         if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
@@ -27,15 +30,32 @@ public class SimplePlayerController : NetworkBehaviour
             float VelY = Input.GetAxisRaw("Vertical") * Speed * Time.deltaTime;
             UpdatePositionRpc(VelX, VelY);
         }
+
         CheckGroundRpc();
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             AnimatorSetTriggerRpc("Jump");
         }
+
+        // Rotar localmente para que el jugador sienta respuesta inmediata
+        RotateToMouse();
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 shootDirection = CalculateShootDirection();
+            ShootServerRpc(shootDirection);
+        }
+    }
+
+    private void OnAttack(InputAction.CallbackContext context)
+    {
+        Vector3 shootDirection = CalculateShootDirection();
+        ShootServerRpc(shootDirection);
     }
 
     [Rpc(SendTo.Server)]
-    public void UpdatePositionRpc(float x,float y)
+    public void UpdatePositionRpc(float x, float y)
     {
         transform.position += new Vector3(x, 0, y);
     }
@@ -45,6 +65,7 @@ public class SimplePlayerController : NetworkBehaviour
     {
         animator.SetTrigger(animationName);
     }
+
     [Rpc(SendTo.Server)]
     public void CheckGroundRpc()
     {
@@ -59,11 +80,68 @@ public class SimplePlayerController : NetworkBehaviour
             animator.SetBool("FreeFall", true);
         }
     }
+
     [Rpc(SendTo.Server)]
     public void JumpTrigerRpc(string animationName)
     {
-        rb=GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
         rb.AddForce(Vector3.up * JumpForce, ForceMode.Impulse);
         animator.SetTrigger(animationName);
+    }
+
+    // Nuevo ServerRpc para disparar con la dirección enviada desde el cliente
+    [ServerRpc]
+    public void ShootServerRpc(Vector3 shootDirection)
+    {
+        if (shootDirection != Vector3.zero)
+        {
+            transform.rotation = Quaternion.LookRotation(shootDirection);
+        }
+
+        GameObject proj = Instantiate(projectilePrefab, firePoint.position, Quaternion.LookRotation(shootDirection));
+        proj.GetComponent<NetworkObject>().Spawn(true);
+        proj.GetComponent<Rigidbody>().AddForce(shootDirection * 20f, ForceMode.Impulse);
+    }
+
+    // Método que calcula la dirección hacia el mouse en el cliente
+    private Vector3 CalculateShootDirection()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+
+        float rayDistance;
+
+        Vector3 shootDirection = transform.forward;
+
+        if (groundPlane.Raycast(ray, out rayDistance))
+        {
+            Vector3 pointToLook = ray.GetPoint(rayDistance);
+            Vector3 direction = pointToLook - firePoint.position;
+            direction.y = 0;
+            shootDirection = direction.normalized;
+        }
+        return shootDirection;
+    }
+
+    public void RotateToMouse()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+
+        float rayDistance;
+
+        if (groundPlane.Raycast(ray, out rayDistance))
+        {
+            Vector3 pointToLook = ray.GetPoint(rayDistance);
+
+            Vector3 lookDirection = pointToLook - transform.position;
+            lookDirection.y = 0;
+
+            if (lookDirection != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
+            }
+        }
     }
 }
