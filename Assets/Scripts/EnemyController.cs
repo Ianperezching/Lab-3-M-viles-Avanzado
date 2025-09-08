@@ -3,12 +3,14 @@ using UnityEngine;
 
 public class EnemyController : NetworkBehaviour
 {
+    public NetworkVariable<int> Health = new NetworkVariable<int>(3);  // Vida inicial
+
     public float speed = 3f;
     private GameObject targetPlayer;
 
     void Update()
     {
-        if (!IsServer) return;  
+        if (!IsServer) return;
 
         FindClosestPlayer();
 
@@ -25,7 +27,7 @@ public class EnemyController : NetworkBehaviour
         float minDistance = Mathf.Infinity;
         GameObject closest = null;
 
-        foreach (var player in players)
+        foreach (GameObject player in players)
         {
             float distance = Vector3.Distance(transform.position, player.transform.position);
             if (distance < minDistance)
@@ -38,14 +40,22 @@ public class EnemyController : NetworkBehaviour
         targetPlayer = closest;
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void TakeDamage(int amount)
     {
-        if (!IsServer) return; 
+        if (!IsServer) return;
 
-        if (other.CompareTag("Player"))
+        Health.Value -= amount;
+        Debug.Log("Enemy took damage. Health now: " + Health.Value);
+
+        if (Health.Value <= 0)
         {
-            
-            GetComponent<NetworkObject>().Despawn(true);
+            Die();
         }
+    }
+
+    private void Die()
+    {
+        Debug.Log("Enemy died.");
+        GetComponent<NetworkObject>().Despawn(true);
     }
 }

@@ -1,26 +1,43 @@
-using UnityEngine;
 using Unity.Netcode;
-
+using UnityEngine;
 
 public class Projectile : NetworkBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public int damage = 1;
+
     void Start()
     {
-        //Destroy(gameobject, 5);
         if (IsServer)
         {
-            Invoke("SimpleDespawn", 5);
+            Invoke(nameof(DespawnSelf), 5f); // Auto destrucción después de 5 segundos
         }
     }
 
-    public void SimpleSpawn()
+    private void DespawnSelf()
     {
-        GetComponent<NetworkObject>().Despawn(true);
+        if (IsServer)
+        {
+            GetComponent<NetworkObject>().Despawn(true);
+        }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
-        
+        if (!IsServer) return;
+
+        if (other.CompareTag("Enemy"))
+        {
+            EnemyController enemy = other.GetComponent<EnemyController>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(damage);
+            }
+            GetComponent<NetworkObject>().Despawn(true);
+        }
+        else if (!other.CompareTag("Player"))
+        {
+            // Destruye el proyectil si choca con paredes u otros objetos (excepto jugador)
+            GetComponent<NetworkObject>().Despawn(true);
+        }
     }
 }
