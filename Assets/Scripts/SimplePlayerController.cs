@@ -1,9 +1,15 @@
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.InputSystem;
 
 public class SimplePlayerController : NetworkBehaviour
 {
     public NetworkVariable<ulong> PlayerID;
+
+    private InputSystem_Actions Accion;
+
+    public GameObject ProjectilePrefab;
+    public Transform FirePoint;
 
     private Animator animator;
     public float Speed;
@@ -11,6 +17,11 @@ public class SimplePlayerController : NetworkBehaviour
     public Rigidbody rb;
     public int JumpForce;
 
+
+    private void OnEnable()
+    {
+        
+    }
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -32,6 +43,15 @@ public class SimplePlayerController : NetworkBehaviour
         {
             AnimatorSetTriggerRpc("Jump");
         }
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            ShootRpc();
+        }
+    }
+
+    private void OnAttack(InputAction.CallbackContext context)
+    {
+        ShootRpc();
     }
 
     [Rpc(SendTo.Server)]
@@ -65,5 +85,14 @@ public class SimplePlayerController : NetworkBehaviour
         rb=GetComponent<Rigidbody>();
         rb.AddForce(Vector3.up * JumpForce, ForceMode.Impulse);
         animator.SetTrigger(animationName);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void ShootRpc()
+    {
+        GameObject proj = Instantiate(ProjectilePrefab,FirePoint.position,Quaternion.identity);
+        proj.GetComponent<NetworkObject>().Spawn(true);
+
+        proj.GetComponent<Rigidbody>().AddForce(Vector3.forward * 5, ForceMode.Impulse);
     }
 }
