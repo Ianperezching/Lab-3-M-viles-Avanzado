@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using Unity.Netcode;
+
 public class UIGameManager : MonoBehaviour
 {
     public TMP_InputField inputField;
@@ -9,7 +10,6 @@ public class UIGameManager : MonoBehaviour
 
     public GameObject LoginPanel;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         SubmitButton.onClick.AddListener(OnsumitName);
@@ -26,12 +26,12 @@ public class UIGameManager : MonoBehaviour
 
     public void OnsumitName()
     {
-        string accountID= inputField.text;
+        string accountID = inputField.text;
         if (!string.IsNullOrEmpty(accountID))
         {
             GameManager2.Instance.RegisterPlayerServerRpc(accountID, NetworkManager.Singleton.LocalClientId);
-            SubmitButton.interactable= false;
-            inputField.interactable=false;
+            SubmitButton.interactable = false;
+            inputField.interactable = false;
 
             LoginPanel.SetActive(false);
         }

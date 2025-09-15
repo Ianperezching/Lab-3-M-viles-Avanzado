@@ -3,25 +3,20 @@ using UnityEngine;
 
 public class RandomBuff : NetworkBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("Player"))
-        {
-          
-            AddBuffPlayerRpc(NetworkManager.Singleton.LocalClientId);
-        }
-        
-    }
+        if (!IsServer) return;
 
-    [Rpc(SendTo.Server)]
-    private void AddBuffPlayerRpc(ulong PlayerID)
-    {
-        print("Aplicar Buff a " + PlayerID);
-        GetComponent<NetworkObject>().Despawn(true);
+        if (other.CompareTag("Player"))
+        {
+            Playerlab4 player = other.GetComponent<Playerlab4>();
+            if (player != null)
+            {
+                int buffAmount = UnityEngine.Random.Range(1, 4); // Entre 1 y 3 inclusive
+                player.AddAttackBuffServerRpc(buffAmount);
+                GetComponent<NetworkObject>().Despawn(true);
+                Debug.Log($"Buff aplicado a jugador {player.accoundID.Value}, +{buffAmount} ataque");
+            }
+        }
     }
 }

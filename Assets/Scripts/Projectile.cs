@@ -9,7 +9,7 @@ public class Projectile : NetworkBehaviour
     {
         if (IsServer)
         {
-            Invoke(nameof(DespawnSelf), 5f); // Auto destrucción después de 5 segundos
+            Invoke(nameof(DespawnSelf), 5f);
         }
     }
 
@@ -25,18 +25,18 @@ public class Projectile : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        if (other.CompareTag("Enemy"))
+        if (other.CompareTag("Player"))
         {
-            EnemyController enemy = other.GetComponent<EnemyController>();
-            if (enemy != null)
+            Playerlab4 player = other.GetComponent<Playerlab4>();
+            if (player != null)
             {
-                enemy.TakeDamage(damage);
+                player.TakeDamageServerRpc(damage);
             }
             GetComponent<NetworkObject>().Despawn(true);
         }
-        else if (!other.CompareTag("Player"))
+        else
         {
-            // Destruye el proyectil si choca con paredes u otros objetos (excepto jugador)
+            // Destruye el proyectil si choca con objetos que no sean jugadores
             GetComponent<NetworkObject>().Despawn(true);
         }
     }

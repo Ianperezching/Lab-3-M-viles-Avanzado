@@ -100,8 +100,18 @@ public class SimplePlayerController : NetworkBehaviour
 
         GameObject proj = Instantiate(projectilePrefab, firePoint.position, Quaternion.LookRotation(shootDirection));
         proj.GetComponent<NetworkObject>().Spawn(true);
-        proj.GetComponent<Rigidbody>().AddForce(shootDirection * 20f, ForceMode.Impulse);
+
+        Projectile projectileScript = proj.GetComponent<Projectile>();
+        Playerlab4 playerLab = GetComponent<Playerlab4>();
+        if (projectileScript != null && playerLab != null)
+        {
+            projectileScript.damage = playerLab.attack.Value; // Asigna daño del jugador al proyectil
+        }
+
+        Vector3 forceDirection = new Vector3(shootDirection.x, 0f, shootDirection.z).normalized;
+        proj.GetComponent<Rigidbody>().AddForce(forceDirection * 20f, ForceMode.Impulse);
     }
+
 
     // Método que calcula la dirección hacia el mouse en el cliente
     private Vector3 CalculateShootDirection()
